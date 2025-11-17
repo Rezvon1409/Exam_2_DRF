@@ -5,13 +5,13 @@ from accounts.models import CustomUser
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name', 'description')
+        fields = ['id', 'name', 'description']
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'role')
+        fields = ['id', 'username', 'email', 'role']
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -21,8 +21,14 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ('id','title','description','price','category','employer','assigned_to','is_done','created_at')
-        extra_kwargs = {
-            "employer": {"required": False},
-            "assigned_to": {"required": False},
-        }
+        fields = [
+            'id',
+            'title',
+            'description',
+            'price',
+            'category',
+            'employer',
+            'assigned_to',
+            'is_done',
+            'created_at',
+        ]

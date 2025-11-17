@@ -28,7 +28,7 @@ class CategoryDetail(APIView):
         try:
             category = Category.objects.get(pk=pk)
         except Category.DoesNotExist:
-            return Response({"error": "Category not found"}, status=404)
+            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = CategorySerializer(category)
         return Response(serializer.data)
 
@@ -36,20 +36,21 @@ class CategoryDetail(APIView):
         try:
             category = Category.objects.get(pk=pk)
         except Category.DoesNotExist:
-            return Response({"error": "Category not found"}, status=404)
+            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = CategorySerializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         try:
             category = Category.objects.get(pk=pk)
         except Category.DoesNotExist:
-            return Response({"error": "Category not found"}, status=404)
+            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
         category.delete()
-        return Response(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class TaskListCreate(APIView):
@@ -65,12 +66,11 @@ class TaskListCreate(APIView):
 
     def post(self, request):
         data = request.data.copy()
-        data["employer"] = request.user.id
         serializer = TaskSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            serializer.save(employer=request.user)  
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TaskDetail(APIView):
@@ -80,7 +80,7 @@ class TaskDetail(APIView):
         try:
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
-            return Response({"error": "Task not found"}, status=404)
+            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = TaskSerializer(task)
         return Response(serializer.data)
 
@@ -88,19 +88,17 @@ class TaskDetail(APIView):
         try:
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
-            return Response({"error": "Task not found"}, status=404)
-        data = request.data.copy()
-        data["employer"] = task.employer.id
-        serializer = TaskSerializer(task, data=data)
+            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TaskSerializer(task, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(employer=task.employer)  
             return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
-            return Response({"error": "Task not found"}, status=404)
+            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
         task.delete()
-        return Response(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
