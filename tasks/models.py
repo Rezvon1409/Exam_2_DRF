@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from accounts.models import CustomUser
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -14,13 +15,8 @@ class Task(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    employer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="created_tasks",
-        limit_choices_to={"role": "employer"}
-    )
-    assigned_to = models.ForeignKey(
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    signed_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name="assigned_tasks",
