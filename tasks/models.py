@@ -10,22 +10,28 @@ class Category(models.Model):
         return self.name
 
 
-class Task(models.Model):
+class Vacancy(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    signed_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        related_name="assigned_tasks",
-        null=True,
-        blank=True,
-        limit_choices_to={"role": "worker"}
-    )
-    is_done = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    employer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={"role": "employer"})
+    assigned_worker = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,related_name="applied_vacancies",null=True,blank=True,limit_choices_to={"role": "worker"})
+    is_filled = models.BooleanField(default=False)  
+    created_at = models.DateTimeField(auto_now_add=True) 
 
     def __str__(self):
         return self.title
+
+
+class Application(models.Model):
+    worker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={"role": "worker"}
+    )
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
+    applied_at = models.DateTimeField(auto_now_add=True)  
+    is_accepted = models.BooleanField(default=False)  
+    def __str__(self):
+        return f"{self.worker} -> {self.vacancy}"

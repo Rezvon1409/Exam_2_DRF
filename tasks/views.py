@@ -1,110 +1,96 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .models import Category, Task
-from .serializers import CategorySerializer, TaskSerializer
+from .models import Category, Vacancy, Application
+from .serializers import CategorySerializer,VacancySerializer,VacancyCreateSerializer,ApplicationSerializer,ApplicationCreateSerializer
 
 
-class CategoryListCreate(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class CategoryListAPIView(APIView):
+
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         categories = Category.objects.all()
         serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class VacancyListAPIView(APIView):
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        vacancies = Vacancy.objects.all()
+        serializer = VacancySerializer(vacancies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class VacancyCreateAPIView(APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        serializer = CategorySerializer(data=request.data)
+        serializer = VacancyCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(employer=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CategoryDetail(APIView):
+class VacancyDetailAPIView(APIView):
+ 
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, pk):
+    def get_object(self, pk):
         try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = CategorySerializer(category)
-        return Response(serializer.data)
+            return Vacancy.objects.get(pk=pk)
+        except Vacancy.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        vacancy = self.get_object(pk)
+        if not vacancy:
+            return Response({"detail": "Vacancy not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = VacancySerializer(vacancy)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = CategorySerializer(category, data=request.data)
+        vacancy = self.get_object(pk)
+        if not vacancy:
+            return Response({"detail": "Vacancy not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = VacancyCreateSerializer(vacancy, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-        category.delete()
+        vacancy = self.get_object(pk)
+        if not vacancy:
+            return Response({"detail": "Vacancy not found"}, status=status.HTTP_404_NOT_FOUND)
+        vacancy.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TaskListCreate(APIView):
+
+class ApplicationListAPIView(APIView):
+ 
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        tasks = Task.objects.all()
-        category_id = request.GET.get("category")
-        if category_id:
-            tasks = tasks.filter(category_id=category_id)
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = TaskSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(creator=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        applications = Application.objects.filter(worker=request.user)
+        serializer = ApplicationSerializer(applications, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TaskDetail(APIView):
+class ApplicationCreateAPIView(APIView):
+
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, pk):
-        try:
-            task = Task.objects.get(pk=pk)
-        except Task.DoesNotExist:
-            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = TaskSerializer(task)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        try:
-            task = Task.objects.get(pk=pk)
-        except Task.DoesNotExist:
-            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        if task.creator != request.user:
-            return Response({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = TaskSerializer(task, data=request.data, partial=True)
+    def post(self, request):
+        serializer = ApplicationCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(creator=task.creator)
-            return Response(serializer.data)
+            serializer.save(worker=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        try:
-            task = Task.objects.get(pk=pk)
-        except Task.DoesNotExist:
-            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        if task.creator != request.user:
-            return Response({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
-
-        task.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
