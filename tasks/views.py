@@ -52,7 +52,6 @@ class CategoryDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class TaskListCreate(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -65,10 +64,9 @@ class TaskListCreate(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        data = request.data.copy()
-        serializer = TaskSerializer(data=data)
+        serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(employer=request.user)  
+            serializer.save(creator=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -89,9 +87,13 @@ class TaskDetail(APIView):
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
             return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if task.creator != request.user:
+            return Response({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = TaskSerializer(task, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(employer=task.employer)  
+            serializer.save(creator=task.creator)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -100,5 +102,9 @@ class TaskDetail(APIView):
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
             return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if task.creator != request.user:
+            return Response({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
+
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
