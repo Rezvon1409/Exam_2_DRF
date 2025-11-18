@@ -1,40 +1,26 @@
 from rest_framework import serializers
-from .models import Category, Vacancy, Application
-from accounts.models import CustomUser
+from .models import Company, Vacancy, Apply
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CompanySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
-        fields = ['id', 'name', 'description']  
+        model = Company
+        fields = "__all__"  
 
 
 class VacancySerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True) 
-    employer = serializers.StringRelatedField(read_only=True) 
-    assigned_worker = serializers.StringRelatedField(read_only=True) 
+    company = CompanySerializer(read_only=True)  
+    company_id = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), source="company", write_only=True)
 
     class Meta:
         model = Vacancy
-        fields = ('id','title','description','salary','category','employer','assigned_worker','is_filled','created_at')
+        fields = ("id","title","description","salary","city","experience","deadline","created_at","is_active","company","company_id","user",)
 
 
-class VacancyCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vacancy
-        fields = ('title','description','salary','category')
-
-
-class ApplicationSerializer(serializers.ModelSerializer):
-    worker = serializers.StringRelatedField(read_only=True)  
-    vacancy = serializers.StringRelatedField(read_only=True)  
+class ApplySerializer(serializers.ModelSerializer):
+    vacancy = VacancySerializer(read_only=True)
+    vacancy_id = serializers.PrimaryKeyRelatedField(queryset=Vacancy.objects.all(), source="vacancy", write_only=True)
 
     class Meta:
-        model = Application
-        fields = ['id', 'worker', 'vacancy', 'applied_at', 'is_accepted']
-
-
-class ApplicationCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Application
-        fields = ['vacancy']  
+        model = Apply
+        fields = ("id","name","phone","cover_letter","status","created_at","vacancy","vacancy_id","user",)
