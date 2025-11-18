@@ -8,6 +8,7 @@ class Company(models.Model):
     location = models.CharField(max_length=100, blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
