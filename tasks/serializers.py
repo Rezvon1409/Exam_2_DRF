@@ -5,7 +5,8 @@ from .models import Company, Vacancy, Apply
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = "__all__"  
+        fields = "__all__" 
+        read_only_fields = ["owner"] 
 
 
 class VacancySerializer(serializers.ModelSerializer):
