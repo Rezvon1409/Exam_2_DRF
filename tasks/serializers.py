@@ -21,5 +21,5 @@ class VacancySerializer(serializers.ModelSerializer):
 class ApplySerializer(serializers.ModelSerializer):
     class Meta:
         model = Apply
-        fields = ("id","name","phone","cover_letter","status","created_at","vacancy","vacancy_id","user",)
+        fields = ("id","name","phone","cover_letter","status","created_at","vacancy_id","user",)
         read_only_fields = ["user"] 
