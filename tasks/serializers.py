@@ -16,7 +16,7 @@ class VacancySerializer(serializers.ModelSerializer):
     class Meta:
         model = Vacancy
         fields = ("id","title","description","salary","city","experience","deadline","created_at","is_active","company","company_id","user",)
-
+        read_only_fields = ["user"]
 
 class ApplySerializer(serializers.ModelSerializer):
     vacancy = VacancySerializer(read_only=True)
