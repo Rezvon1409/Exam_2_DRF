@@ -19,9 +19,6 @@ class VacancySerializer(serializers.ModelSerializer):
         read_only_fields = ["user"]
 
 class ApplySerializer(serializers.ModelSerializer):
-    vacancy = VacancySerializer(read_only=True)
-    vacancy_id = serializers.PrimaryKeyRelatedField(queryset=Vacancy.objects.all(), source="vacancy", write_only=True)
-
     class Meta:
         model = Apply
         fields = ("id","name","phone","cover_letter","status","created_at","vacancy","vacancy_id","user",)
