@@ -31,7 +31,7 @@ class Vacancy(models.Model):
 
 
 class Apply(models.Model):
-    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
+    vacancy_id = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
