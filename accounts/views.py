@@ -5,7 +5,6 @@ from django.contrib.auth import authenticate, login, logout
 from .models import CustomUser, UserProfile
 from .serializers import *
 
-
 class RegisterAPIView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -32,8 +31,6 @@ class LoginAPIView(APIView):
                 })
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 class LogoutAPIView(APIView):
     def post(self, request):
