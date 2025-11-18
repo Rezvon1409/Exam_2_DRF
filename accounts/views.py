@@ -1,11 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from .models import CustomUser, UserProfile
 from .serializers import *
 
+
 class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -17,6 +20,7 @@ class RegisterAPIView(APIView):
 
 
 class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -33,6 +37,7 @@ class LoginAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         logout(request)
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
@@ -40,6 +45,7 @@ class LogoutAPIView(APIView):
 
 
 class UserProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
             profile = request.user.profile
